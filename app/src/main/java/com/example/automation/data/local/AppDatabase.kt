@@ -30,7 +30,7 @@ data class RuleEntity(
     val failureCount: Int = 0
 )
 
-@Entity(tableName = "execution_logs", indices = [Index("ruleId"), Index("timestamp")])
+@Entity(tableName = "execution_logs", indices = [Index("ruleId"), Index("startTime")])
 data class ExecutionLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val ruleId: String,
@@ -76,13 +76,13 @@ interface ExecutionLogDao {
     @Insert
     suspend fun insert(log: ExecutionLogEntity)
 
-    @Query("SELECT * FROM execution_logs WHERE ruleId = :ruleId ORDER BY timestamp DESC LIMIT :limit")
+    @Query("SELECT * FROM execution_logs WHERE ruleId = :ruleId ORDER BY startTime DESC LIMIT :limit")
     suspend fun getLogsForRule(ruleId: String, limit: Int): List<ExecutionLogEntity>
 
-    @Query("SELECT * FROM execution_logs ORDER BY timestamp DESC LIMIT :limit")
+    @Query("SELECT * FROM execution_logs ORDER BY startTime DESC LIMIT :limit")
     suspend fun getRecentLogs(limit: Int): List<ExecutionLogEntity>
 
-    @Query("DELETE FROM execution_logs WHERE timestamp < :cutoff")
+    @Query("DELETE FROM execution_logs WHERE startTime < :cutoff")
     suspend fun deleteOldLogs(cutoff: Instant)
 }
 
@@ -130,4 +130,3 @@ class Converters {
     @TypeConverter
     fun toVariables(value: String): Map<String, Any> = json.decodeFromString(value)
 }
-

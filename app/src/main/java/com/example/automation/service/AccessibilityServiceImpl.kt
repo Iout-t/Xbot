@@ -310,16 +310,16 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
         override val className: String = info.className.toString()
         override val packageName: String = info.packageName?.toString() ?: ""
         
-        override val boundsInScreen: Rect = info.run {
+        override val boundsInScreen: com.example.automation.core.executor.Rect = info.run {
             val rect = android.graphics.Rect()
             getBoundsInScreen(rect)
-            Rect(rect.left, rect.top, rect.right, rect.bottom)
+            com.example.automation.core.executor.Rect(rect.left, rect.top, rect.right, rect.bottom)
         }
         
-        override val boundsInParent: Rect = info.run {
+        override val boundsInParent: com.example.automation.core.executor.Rect = info.run {
             val rect = android.graphics.Rect()
             getBoundsInParent(rect)
-            Rect(rect.left, rect.top, rect.right, rect.bottom)
+            com.example.automation.core.executor.Rect(rect.left, rect.top, rect.right, rect.bottom)
         }
 
         override val centerX: Int = boundsInScreen.centerX
