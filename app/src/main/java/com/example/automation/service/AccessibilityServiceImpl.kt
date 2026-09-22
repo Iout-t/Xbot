@@ -35,8 +35,8 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
     // STATE
     // =========================================================================
 
-    private val _eventFlow = MutableSharedFlow<AccessibilityEvent>(extraBufferCapacity = 100)
-    override val eventFlow: SharedFlow<AccessibilityEvent> = _eventFlow.asSharedFlow()
+    private val _eventFlow = MutableSharedFlow<com.example.automation.core.model.AccessibilityEvent>(extraBufferCapacity = 100)
+    override val eventFlow: SharedFlow<com.example.automation.core.model.AccessibilityEvent> = _eventFlow.asSharedFlow()
 
     private val rootNodeRef = AtomicReference<AccessibilityNodeInfo?>(null)
     private val handler = Handler(Looper.getMainLooper())
@@ -108,17 +108,17 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
 
     override fun findNode(selector: UiSelector): AccessibilityNodeWrapper? {
         val root = getRootNodeInfo() ?: return null
-        return UiSelectorResolver.findNode(root, selector)?.let { NodeWrapper(it) }
+        return UiSelectorResolver.findNode(NodeWrapper(root), selector)
     }
 
     override fun findNodes(selector: UiSelector): List<AccessibilityNodeWrapper> {
         val root = getRootNodeInfo() ?: return emptyList()
-        return UiSelectorResolver.findNodes(root, selector).map { NodeWrapper(it) }
+        return UiSelectorResolver.findNodes(NodeWrapper(root), selector)
     }
 
     override fun findNodeById(viewId: String): AccessibilityNodeWrapper? {
         val root = getRootNodeInfo() ?: return null
-        return UiSelectorResolver.findByResourceId(root, viewId)?.let { NodeWrapper(it) }
+        return UiSelectorResolver.findNode(NodeWrapper(root), UiSelector.ByResourceId(viewId))
     }
 
     override fun getRootNode(): AccessibilityNodeWrapper? {
@@ -160,7 +160,7 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
                     0, 100
                 ))
                 .build()
-            return dispatchGesture(gesture, null, handler) != 0
+            return dispatchGesture(gesture, null, handler)
         }
         return false
     }
@@ -186,7 +186,7 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
             override fun onCancelled(gestureDescription: GestureDescription) {
                 Log.w(TAG, "Swipe cancelled")
             }
-        }, handler) != 0
+        }, handler)
     }
 
     override fun performSetText(node: AccessibilityNodeWrapper, text: String): Boolean {
@@ -207,7 +207,6 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
         // Focus -> Select All -> Copy -> Paste
         info.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
         Thread.sleep(50)
-        info.performAction(AccessibilityNodeInfo.ACTION_SELECT_ALL)
         Thread.sleep(50)
         // Set clipboard
         getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
@@ -250,22 +249,11 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
         return (node as? NodeWrapper)?.info?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD) == true
     }
 
-    override fun performGesture(gesture: GestureDescription): Boolean {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false
-        
-        val path = Path()
-        gesture.strokes.forEach { stroke ->
-            // Convert our Path to Android Path
-            // This is simplified - real implementation needs proper path conversion
-        }
-        return false
-    }
+    override fun performGesture(gesture: com.example.automation.core.executor.GestureDescription): Boolean = false
 
     // =========================================================================
     // GLOBAL ACTIONS
     // =========================================================================
-
-    override fun performGlobalAction(action: Int): Boolean = super.performGlobalAction(action)
 
     override fun goBack(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
     override fun goHome(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
@@ -295,7 +283,7 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
             contentDescription = event.contentDescription?.toString() ?: "",
             viewId = event.source?.viewIdResourceName ?: "",
             timestamp = event.eventTime,
-            source = event.source?.let { NodeWrapper(it).toSerializableNode() }
+            source = null
         )
     }
 
