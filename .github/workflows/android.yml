@@ -39,25 +39,38 @@ jobs:
           export ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
           mkdir -p "$ANDROID_HOME"
 
-          if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
-            mkdir -p "$ANDROID_HOME/cmdline-tools"
-            cd "$ANDROID_HOME/cmdline-tools"
+          SDKMANAGER_DIR="$ANDROID_HOME/cmdline-tools"
+          SDKMANAGER_BIN="$SDKMANAGER_DIR/latest/bin/sdkmanager"
+
+          if [ ! -x "$SDKMANAGER_BIN" ]; then
+            mkdir -p "$SDKMANAGER_DIR"
+            cd "$SDKMANAGER_DIR"
             curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o cmdline-tools.zip
             unzip -q cmdline-tools.zip
             rm -f cmdline-tools.zip
 
-            if [ -d "$ANDROID_HOME/cmdline-tools/cmdline-tools" ]; then
-              mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+            if [ -d "$SDKMANAGER_DIR/cmdline-tools" ]; then
+              mv "$SDKMANAGER_DIR/cmdline-tools" "$SDKMANAGER_DIR/latest"
             fi
           fi
 
-          if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
-            echo "Android SDK command-line tools are missing from the runner image."
+          if [ ! -x "$SDKMANAGER_BIN" ]; then
+            echo "Android SDK command-line tools are unavailable."
             exit 1
           fi
 
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install \
+          # sdkmanager exits before `yes` does after consuming the final answer.
+          # With pipefail enabled, that normal SIGPIPE from `yes` would fail CI.
+          set +e
+          yes | "$SDKMANAGER_BIN" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
+          sdkmanager_status=${PIPESTATUS[1]}
+          set -e
+          if [ "$sdkmanager_status" -ne 0 ]; then
+            echo "sdkmanager --licenses failed with status $sdkmanager_status."
+            exit "$sdkmanager_status"
+          fi
+
+          "$SDKMANAGER_BIN" --sdk_root="$ANDROID_HOME" --install \
             "platform-tools" \
             "platforms;android-34" \
             "build-tools;34.0.0"
