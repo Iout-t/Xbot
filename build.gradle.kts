@@ -10,6 +10,9 @@ buildscript {
 plugins {
     id("com.android.application") version "$agpVersion" apply false
     id("org.jetbrains.kotlin.android") version "$kotlinVersion" apply false
+    id("org.jetbrains.kotlin.kapt") version "$kotlinVersion" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "$kotlinVersion" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "$kotlinVersion" apply false
     id("com.google.dagger.hilt") version "$hiltVersion" apply false
     id("com.google.protobuf") version "$protobufVersion" apply false
 }
