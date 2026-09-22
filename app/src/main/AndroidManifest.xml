@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.automation">
+
+    <!-- ===== PERMISSIONS ===== -->
+    <!-- Screen observation / recording -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Accessibility -->
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+    
+    <!-- Storage / Media -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    
+    <!-- SMS / Messages (restricted - local only) -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    
+    <!-- Contacts -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    
+    <!-- Overlay for floating UI / screen capture -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    
+    <!-- Vibration / Wake lock -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- Network (for local sync/backup only) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- ===== FEATURES ===== -->
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
+
+    <application
+        android:name=".AutomationApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/backup_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AutomationApp"
+        tools:targetApi="31">
+
+        <!-- Main Activity -->
+        <activity
+            android:name=".ui.main.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.AutomationApp.NoActionBar"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Accessibility Service -->
+        <service
+            android:name=".service.AccessibilityServiceImpl"
+            android:label="@string/accessibility_service_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true"
+            android:description="@string/accessibility_service_desc">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Media Projection Foreground Service -->
+        <service
+            android:name=".service.MediaProjectionService"
+            android:foregroundServiceType="mediaProjection"
+            android:exported="false" />
+
+        <!-- Automation Foreground Service -->
+        <service
+            android:name=".service.AutomationForegroundService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
+        <!-- Hilt Entry Point -->
+        <meta-data
+            android:name="dagger.hilt.android.internal.ENTRY_POINT_ACCESSORS"
+            android:value="com.example.automation.di.HiltEntryPoints" />
+
+    </application>
+
+    <!-- Queries for package visibility (Android 11+) -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" />
+            <data android:scheme="smsto" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="content" />
+        </intent>
+    </queries>
+
+</manifest>
