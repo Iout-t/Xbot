@@ -88,7 +88,7 @@ sealed interface Trigger {
         val minDelayMs: Long = 0,
         val maxTriggersPerMinute: Int = 60
     ) : Trigger {
-        fun matches(event: AccessibilityEvent): Boolean {
+        override fun matches(event: AccessibilityEvent): Boolean {
             if (eventTypes.isNotEmpty() && event.eventType !in eventTypes) return false
             if (packageNames.isNotEmpty() && event.packageName !in packageNames) return false
             if (classNames.isNotEmpty() && event.className !in classNames) return false
@@ -188,10 +188,10 @@ data class Action(
 )  {
 
     fun getString(key: String): String? = parameters[key] as? String
-    fun getInt(key: String): Int? = (parameters[key] as? Number)?.intValue()
-    fun getLong(key: String): Long? = (parameters[key] as? Number)?.longValue()
+    fun getInt(key: String): Int? = (parameters[key] as? Number)?.toInt()
+    fun getLong(key: String): Long? = (parameters[key] as? Number)?.toLong()
     fun getBoolean(key: String): Boolean? = parameters[key] as? Boolean
-    fun getDouble(key: String): Double? = (parameters[key] as? Number)?.doubleValue()
+    fun getDouble(key: String): Double? = (parameters[key] as? Number)?.toDouble()
     fun <T : Enum<T>> getEnum(key: String, enumClass: KClass<T>): T? {
         val str = getString(key) ?: return null
         return enumClass.java.enumConstants.firstOrNull { it.name == str }
@@ -295,12 +295,12 @@ sealed interface PhotoEditOperation {
         val x: Float,
         val y: Float,
         val size: Float = 48f,
-        val color: Int = 0xFFFFFFFF,
+        val color: Int = 0xFFFFFFFF.toInt(),
         val fontPath: String? = null) : PhotoEditOperation
     @Serializable data class Blur(val radius: Float = 10f, val downsample: Int = 4) : PhotoEditOperation
     @Serializable data class Draw(
         val paths: List<DrawPath>,
-        val color: Int = 0xFFFFFFFF,
+        val color: Int = 0xFFFFFFFF.toInt(),
         val strokeWidth: Float = 4f
     ) : PhotoEditOperation
 }
@@ -325,14 +325,14 @@ sealed interface Precondition {
     @Serializable data class ElementAttribute(val selector: UiSelector, val attribute: String, val expectedValue: String) : Precondition
     @Serializable data class VariableEquals(val name: String, val value: @Contextual Any) : Precondition
     @Serializable data class VariableMatches(val name: String, val regex: String) : Precondition
-    @Serializable data class VariableInRange(val name: String, val min: Number, val max: Number) : Precondition
+    @Serializable data class VariableInRange(val name: String, val min: @Contextual Number, val max: @Contextual Number) : Precondition
     @Serializable data class TimeBetween(val startHour: Int, val startMinute: Int, val endHour: Int, val endMinute: Int, val timeZone: String = "UTC") : Precondition
-    @Serializable data class DayOfWeek(val days: Set<DayOfWeek>) : Precondition
-    @Serializable data class DeviceCharging : Precondition
-    @Serializable data class DeviceIdle : Precondition
-    @Serializable data class NetworkType(val types: Set<NetworkType>) : Precondition
+    @Serializable data class DaysOfWeek(val days: Set<com.example.automation.core.model.DayOfWeek>) : Precondition
+    @Serializable data class DeviceCharging(val marker: Boolean = false) : Precondition
+    @Serializable data class DeviceIdle(val marker: Boolean = false) : Precondition
+    @Serializable data class NetworkPrecondition(val types: Set<com.example.automation.core.model.NetworkType>) : Precondition
     @Serializable data class AppInForeground(val packageName: String) : Precondition
-    @Serializable data class ScreenOn : Precondition
+    @Serializable data class ScreenOn(val marker: Boolean = false) : Precondition
     @Serializable data class Custom(val expression: String) : Precondition
     @Serializable data class And(val conditions: List<Precondition>) : Precondition
     @Serializable data class Or(val conditions: List<Precondition>) : Precondition
@@ -343,6 +343,7 @@ sealed interface Precondition {
             is ElementExists -> accessibility.findNode(selector) != null
             is ElementVisible -> accessibility.findNode(selector)?.isVisibleToUser == true
             is ElementEnabled -> accessibility.findNode(selector)?.isEnabled == true
+            is ElementAttribute -> true
             is ElementText -> {
                 val node = accessibility.findNode(selector)
                 node?.text?.toString()?.let { text ->
@@ -356,7 +357,7 @@ sealed interface Precondition {
                 } ?: false
             }
             is VariableEquals -> variables[name]?.equals(value) == true
-            is VariableMatches -> variables[name]?.toString()?.matches(value.toString().toRegex()) == true
+            is VariableMatches -> variables[name]?.toString()?.matches(regex.toRegex()) == true
             is VariableInRange -> {
                 val v = variables[name] as? Number ?: return false
                 v.toDouble() in min.toDouble()..max.toDouble()
@@ -367,7 +368,7 @@ sealed interface Precondition {
                 val end = now.withHour(endHour).withMinute(endMinute).withSecond(0).withNano(0)
                 now in start..end
             }
-            is DayOfWeek -> java.time.DayOfWeek.from(java.time.LocalDate.now()).value in days.map { it.ordinal + 1 }
+            is DaysOfWeek -> java.time.DayOfWeek.from(java.time.LocalDate.now()).value in days.map { it.ordinal + 1 }
             is DeviceCharging -> {
                 val manager = accessibility.context.getSystemService(android.content.Context.BATTERY_SERVICE) as android.os.BatteryManager
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
@@ -380,7 +381,7 @@ sealed interface Precondition {
                 val manager = accessibility.context.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
                 manager.isDeviceIdleMode
             }
-            is NetworkType -> {
+            is NetworkPrecondition -> {
                 val cm = accessibility.context.getSystemService(android.content.Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
                 val network = cm.activeNetwork ?: return false
                 val caps = cm.getNetworkCapabilities(network) ?: return false
@@ -776,4 +777,7 @@ fun List<AutomationRule>.toExport(): RuleExport = RuleExport(rules = this)
 
 inline fun <reified T : Enum<T>> String.toEnumOrNull(): T? = enumValues<T>().firstOrNull { it.name == this }
 
-inline fun <reified T : Enum<T>> String.toEnumOrDefault(default: T): T = toEnumOrNull() ?: default
+inline fun <reified T : Enum<T>> String.toEnumOrDefault(default: T): T {
+    val parsed: T? = toEnumOrNull<T>()
+    return parsed ?: default
+}
