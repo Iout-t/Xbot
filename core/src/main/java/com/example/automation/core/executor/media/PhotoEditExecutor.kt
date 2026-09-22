@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter
 class PhotoEditExecutor(
     private val saveDirectory: File = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "AutomationApp/Edited")
 ) : ActionExecutor {
-    override val supportedType = ActionType.EDIT_PHOTO
+    override val supportedType = ActionType.EditPhoto(emptyList())
     override val executionDispatcher = Dispatchers.IO
 
     init {

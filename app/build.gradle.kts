@@ -79,9 +79,12 @@ android {
 }
 
 dependencies {
+    implementation(project(":core"))
+
     // Core Android & Jetpack
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
     implementation("androidx.activity:activity-compose:$activityVersion")
     implementation("androidx.navigation:navigation-compose:$navigationVersion")

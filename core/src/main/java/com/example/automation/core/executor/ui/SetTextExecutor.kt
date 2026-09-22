@@ -3,10 +3,13 @@ package com.example.automation.core.executor.ui
 import com.example.automation.core.executor.*
 import com.example.automation.core.model.*
 import com.example.automation.core.selector.UiSelectorResolver
+import android.view.KeyEvent
+import android.view.accessibility.AccessibilityNodeInfo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 
 class SetTextExecutor : ActionExecutor {
-    override val supportedType = ActionType.SET_TEXT
+    override val supportedType = ActionType.SetText()
     override val executionDispatcher = Dispatchers.Main
 
     override suspend fun execute(
@@ -33,14 +36,14 @@ class SetTextExecutor : ActionExecutor {
         val delayBetweenChars = action.getLong("delayBetweenChars") ?: 0L
 
         // Focus the element first
-        accessibility.performAction(target, AccessibilityNodeInfoCompat.ACTION_FOCUS)
+        accessibility.performAction(target, AccessibilityNodeInfo.ACTION_FOCUS)
         delay(50)
 
         if (clearFirst) {
             // Clear existing text: select all + delete
-            accessibility.performAction(target, AccessibilityNodeInfoCompat.ACTION_SELECT_ALL)
+            accessibility.performAction(target, AccessibilityNodeInfo.ACTION_SELECT_ALL)
             delay(50)
-            accessibility.performAction(target, AccessibilityNodeInfoCompat.ACTION_CUT)
+            accessibility.performAction(target, AccessibilityNodeInfo.ACTION_CUT)
             delay(100)
         }
 

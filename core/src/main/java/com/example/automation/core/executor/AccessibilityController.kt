@@ -1,7 +1,6 @@
 package com.example.automation.core.executor
 
 import com.example.automation.core.model.*
-import com.example.automation.core.selector.UiSelector
 import com.example.automation.core.selector.UiSelectorResolver
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow

@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.flow
 import java.time.Duration
 
 class WaitForElementExecutor : ActionExecutor {
-    override val supportedType = ActionType.WAIT_FOR_ELEMENT
+    override val supportedType = ActionType.WaitForElement()
     override val executionDispatcher = Dispatchers.Default
 
     override suspend fun execute(

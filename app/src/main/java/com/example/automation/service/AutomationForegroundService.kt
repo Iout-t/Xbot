@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.automation.core.executor.AutomationEngine
 import com.example.automation.core.model.*
+import com.example.automation.di.getHiltEntryPoints
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
 import java.util.concurrent.atomic.AtomicBoolean
@@ -39,14 +40,9 @@ class AutomationForegroundService : Service() {
         notificationManager = NotificationManagerCompat.from(this)
         createNotificationChannel()
         
-        // Get engine from DI (simplified - use Hilt entry point in real app)
-        engine = (applicationContext as? di.HiltEntryPoints)?.automationEngine()
-            ?: AutomationEngine(
-                accessibilityController = AccessibilityServiceImpl.getInstance()!!,
-                actionExecutorRegistry = di.HiltEntryPoints.get()?.actionExecutorRegistry()!!,
-                ruleRepository = di.HiltEntryPoints.get()?.ruleRepository()!!,
-                executionLogger = di.HiltEntryPoints.get()?.executionLogger()!!
-            )
+        // Services are created by Android rather than Hilt, so retrieve the
+        // application-scoped engine through the generated entry point.
+        engine = applicationContext.getHiltEntryPoints().automationEngine()
     }
 
     override fun onBind(intent: Intent?): IBinder = binder

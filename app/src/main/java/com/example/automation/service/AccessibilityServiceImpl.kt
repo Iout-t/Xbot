@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
 import android.content.Intent
 import android.graphics.Path
+import android.os.Bundle
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -12,11 +13,11 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.example.automation.core.executor.*
 import com.example.automation.core.model.*
-import com.example.automation.core.selector.UiSelector
 import com.example.automation.core.selector.UiSelectorResolver
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import java.util.concurrent.atomic.AtomicReference
 
@@ -173,7 +174,8 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
         val path = Path().apply {
             moveTo(startX.toFloat(), startY.toFloat())
             lineTo(endX.toFloat(), endY.toFloat())
-        }val gesture = GestureDescription.Builder()
+        }
+        val gesture = GestureDescription.Builder()
             .addStroke(GestureDescription.StrokeDescription(path, 0, duration.toLong()))
             .build()
 
@@ -263,9 +265,7 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
     // GLOBAL ACTIONS
     // =========================================================================
 
-    override fun performGlobalAction(action: Int): Boolean {
-        return performGlobalAction(action)
-    }
+    override fun performGlobalAction(action: Int): Boolean = super.performGlobalAction(action)
 
     override fun goBack(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
     override fun goHome(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
@@ -329,7 +329,8 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
             info.isVisibleToUser
         } else {
             info.isVisibleToUser
-        }override val isEnabled: Boolean = info.isEnabled
+        }
+        override val isEnabled: Boolean = info.isEnabled
         override val isFocused: Boolean = info.isFocused
         override val isFocusable: Boolean = info.isFocusable
         override val isClickable: Boolean = info.isClickable
@@ -393,4 +394,3 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
         }
     }
 }
-

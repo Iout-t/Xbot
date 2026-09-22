@@ -6,32 +6,11 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.*
 import java.time.Instant
 import java.util.UUID
+import kotlin.reflect.KClass
 
 // =========================================================================
 // SERIALIZATION HELPERS FOR SEALED CLASSES
 // =========================================================================
-
-/**
- * Custom serializer for sealed interfaces/classes using type discriminator.
- */
-private class SealedClassSerializer<T : Any>(
-    private val classDiscriminator: String,
-    private val subclasses: Map<String, KSerializer<out T>>
-) : KSerializer<T> {
-
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor(classDiscriminator) {
-        // Polymorphic serializer descriptor
-    }.also { it.setElements(serializerModule.getSerializersModule()) }
-
-    override fun deserialize(decoder: Decoder): T {
-        val composite = decoder.decodeSerializableValue(PolymorphicSerializer<T>(classDiscriminator, subclasses))
-        return composite
-    }
-
-    override fun serialize(encoder: Encoder, value: T) {
-        encoder.encodeSerializableValue(PolymorphicSerializer(classDiscriminator, subclasses), value)
-    }
-}
 
 // =========================================================================
 // CORE DOMAIN MODELS

@@ -24,6 +24,8 @@ class MediaProjectionService : Service() {
         private const val TAG = "MediaProjectionService"
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "media_projection_channel"
+        @Volatile private var instance: MediaProjectionService? = null
+        fun getInstance(): MediaProjectionService? = instance
     }
 
     private var mediaProjection: MediaProjection? = null
@@ -43,6 +45,7 @@ class MediaProjectionService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         mediaProjectionManager = getSystemService(MediaProjectionManager::class.java)
         createNotificationChannel()
     }
@@ -160,7 +163,9 @@ class MediaProjectionService : Service() {
             stopForeground(true)
             stopSelf()
         }
-    }interface ScreenCaptureCallback {
+    }
+
+    interface ScreenCaptureCallback {
         fun onScreenCaptureStart()
         fun onScreenCaptureStop()
         fun onScreenCaptureError(error: String)
@@ -199,8 +204,15 @@ class MediaProjectionService : Service() {
 /**
  * Wrapper for MediaProjectionManager to use in core module.
  */
-class MediaProjectionManagerWrapper(private val service: MediaProjectionService) {
-    fun getActiveProjection(): MediaProjection? = service.getActiveProjection()
-    fun requestPermission(): Intent? = service.requestProjectionPermission()
-    fun setResult(resultCode: Int, data: Intent?) = service.setProjectionResult(resultCode, data)
+class MediaProjectionManagerWrapper : com.example.automation.core.executor.MediaProjectionManagerWrapper {
+    private val service: MediaProjectionService?
+        get() = MediaProjectionService.getInstance()
+
+    override fun getActiveProjection(): MediaProjection? = service?.getActiveProjection()
+    override fun requestPermission(): Intent? = service?.requestProjectionPermission()
+    override fun setResult(resultCode: Int, data: Intent?) { service?.setProjectionResult(resultCode, data) }
+    override suspend fun captureScreen(
+        includeStatusBar: Boolean = false,
+        includeNavBar: Boolean = false
+    ): android.graphics.Bitmap? = service?.captureScreen(includeStatusBar, includeNavBar)
 }

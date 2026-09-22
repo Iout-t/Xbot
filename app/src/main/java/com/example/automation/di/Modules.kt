@@ -1,55 +1,58 @@
 package com.example.automation.di
 
-import android.app.Application
 import android.content.Context
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
-import com.example.automation.core.executor.*
-import com.example.automation.core.model.*
-import com.example.automation.data.local.*
-import com.example.automation.data.repository.*
-import com.example.automation.service.*
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.Singleton
+import com.example.automation.core.executor.AccessibilityController
+import com.example.automation.core.executor.ActionExecutorRegistry
+import com.example.automation.core.executor.AutomationEngine
+import com.example.automation.core.executor.ExecutionLogger
+import com.example.automation.data.local.AppDatabase
+import com.example.automation.data.repository.ExecutionLoggerImpl
+import com.example.automation.data.repository.RuleRepository
+import com.example.automation.data.repository.RuleRepositoryImpl
+import com.example.automation.service.AccessibilityServiceImpl
+import com.example.automation.service.MediaProjectionManagerWrapper
+import com.example.automation.service.MediaProjectionService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Inject
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
     @Provides
     @Singleton
-    fun providePreferencesDataStore(@ApplicationContext context: Context) =
-        context.preferencesDataStore("automation_prefs")
-
-    @Provides
-    @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context) =
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, "automation.db")
             .fallbackToDestructiveMigration()
             .build()
 
     @Provides
     @Singleton
-    fun provideRuleRepository(db: AppDatabase, dataStore: androidx.datastore.preferences.DataStore<Preferences>): RuleRepository {
-        return RuleRepositoryImpl(db.ruleDao(), db.executionLogDao(), dataStore)
-    }
+    fun provideRuleRepository(database: AppDatabase): RuleRepository =
+        RuleRepositoryImpl(database)
 
     @Provides
     @Singleton
-    fun provideExecutionLogger(db: AppDatabase): ExecutionLogger {
-        return ExecutionLoggerImpl(db.executionLogDao())
-    }
+    fun provideExecutionLogger(database: AppDatabase): ExecutionLogger =
+        ExecutionLoggerImpl(database)
 
     @Provides
     @Singleton
-    fun provideActionExecutorRegistry(): ActionExecutorRegistry {
-        return ActionExecutorRegistry()
-    }
+    fun provideActionExecutorRegistry(
+        @ApplicationContext context: Context,
+        mediaProjectionManager: MediaProjectionManagerWrapper
+    ): ActionExecutorRegistry = ActionExecutorRegistry(context, mediaProjectionManager)
+
+    @Provides
+    @Singleton
+    fun provideAccessibilityController(): AccessibilityController =
+        checkNotNull(AccessibilityServiceImpl.getInstance()) {
+            "Accessibility service is not enabled"
+        }
 
     @Provides
     @Singleton
@@ -58,29 +61,15 @@ object AppModule {
         executorRegistry: ActionExecutorRegistry,
         ruleRepository: RuleRepository,
         executionLogger: ExecutionLogger
-    ): AutomationEngine {
-        return AutomationEngine(
-            accessibilityController,
-            executorRegistry,
-            ruleRepository,
-            executionLogger
-        )
-    }
-}
+    ): AutomationEngine = AutomationEngine(
+        accessibilityController,
+        executorRegistry,
+        ruleRepository,
+        executionLogger
+    )
 
-@Module
-@InstallIn(SingletonComponent::class)
-interface ServiceModule {
-    @Binds
-    fun bindAccessibilityController(service: AccessibilityServiceImpl): AccessibilityController
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-object MediaModule {
     @Provides
     @Singleton
-    fun provideMediaProjectionManagerWrapper(service: MediaProjectionService): MediaProjectionManagerWrapper {
-        return MediaProjectionManagerWrapper(service)
-    }
+    fun provideMediaProjectionManagerWrapper(): MediaProjectionManagerWrapper =
+        MediaProjectionManagerWrapper()
 }

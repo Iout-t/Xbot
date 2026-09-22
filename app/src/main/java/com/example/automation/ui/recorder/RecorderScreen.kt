@@ -1,6 +1,8 @@
 package com.example.automation.ui.recorder
 
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -11,8 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.automation.core.model.*
-import com.example.automation.core.selector.UiSelector
+import com.example.automation.core.model.UiSelector
 import com.example.automation.service.AccessibilityServiceImpl
 import kotlinx.coroutines.launch
 

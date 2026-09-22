@@ -17,7 +17,7 @@ class TakeScreenshotExecutor(
     private val mediaProjectionManager: MediaProjectionManagerWrapper,
     private val saveDirectory: File = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "AutomationApp/Screenshots")
 ) : ActionExecutor {
-    override val supportedType = ActionType.TAKE_SCREENSHOT
+    override val supportedType = ActionType.TakeScreenshot()
     override val executionDispatcher = Dispatchers.IO
 
     init {

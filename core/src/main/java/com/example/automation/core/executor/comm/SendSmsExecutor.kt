@@ -8,7 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class SendSmsExecutor(private val context: Context) : ActionExecutor {
-    override val supportedType = ActionType.SEND_SMS
+    override val supportedType = ActionType.SendSms()
     override val executionDispatcher = Dispatchers.IO
 
     override suspend fun execute(

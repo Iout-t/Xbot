@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.automation.core.executor.AutomationEngine
 import com.example.automation.core.model.*
 import com.example.automation.data.repository.RuleRepository
-import com.example.automation.service.MediaProjectionService
+import com.example.automation.service.MediaProjectionManagerWrapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -15,7 +15,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val engine: AutomationEngine,
     private val ruleRepository: RuleRepository,
-    private val mediaProjectionService: MediaProjectionService
+    private val mediaProjectionService: MediaProjectionManagerWrapper
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MainUiState())
@@ -55,7 +55,7 @@ class MainViewModel @Inject constructor(
 
     fun takeScreenshot() {
         viewModelScope.launch {
-            val bitmap = mediaProjectionService.captureScreen().await()
+            val bitmap = mediaProjectionService.captureScreen()
             // Handle result
         }
     }
