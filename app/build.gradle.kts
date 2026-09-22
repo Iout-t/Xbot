@@ -41,6 +41,11 @@ android {
         dataBinding = false
     }
 
+    composeOptions {
+        // Kotlin 1.9.24 requires a Compose compiler from the 1.5.x line.
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
+
     packagingOptions {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1,LICENSE,NOTICE}"
