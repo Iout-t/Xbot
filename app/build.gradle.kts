@@ -1,8 +1,10 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.dagger.hilt")
-    id("kotlinx-serialization")
     id("kotlin-parcelize")
 }
 
@@ -17,7 +19,7 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        
+
         // Required for Accessibility Service
         manifestPlaceholders["accessibilityServiceName"] = "com.example.automation.service.AccessibilityServiceImpl"
     }
@@ -26,10 +28,6 @@ android {
         compose = true
         viewBinding = false
         dataBinding = false
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "2.0.0"
     }
 
     packagingOptions {
