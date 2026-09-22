@@ -373,8 +373,8 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
             return info.performAction(action)
         }
         
-        override fun toSerializableNode(): SerializableNode {
-            return SerializableNode(
+        override fun toSerializableNode(): com.example.automation.core.executor.SerializableNode {
+            return com.example.automation.core.executor.SerializableNode(
                 viewId = viewIdResourceName,
                 text = text?.toString(),
                 contentDescription = contentDescription?.toString(),
