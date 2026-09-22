@@ -1,3 +1,8 @@
+val agpVersion = providers.gradleProperty("agpVersion").get()
+val kotlinVersion = providers.gradleProperty("kotlinVersion").get()
+val hiltVersion = providers.gradleProperty("hiltVersion").get()
+val protobufVersion = providers.gradleProperty("protobufVersion").get()
+
 buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:$agpVersion")
@@ -8,13 +13,13 @@ buildscript {
 }
 
 plugins {
-    id("com.android.application") version "$agpVersion" apply false
-    id("org.jetbrains.kotlin.android") version "$kotlinVersion" apply false
-    id("org.jetbrains.kotlin.kapt") version "$kotlinVersion" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "$kotlinVersion" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "$kotlinVersion" apply false
-    id("com.google.dagger.hilt") version "$hiltVersion" apply false
-    id("com.google.protobuf") version "$protobufVersion" apply false
+    id("com.android.application") version agpVersion apply false
+    id("org.jetbrains.kotlin.android") version kotlinVersion apply false
+    id("org.jetbrains.kotlin.kapt") version kotlinVersion apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion apply false
+    id("org.jetbrains.kotlin.plugin.compose") version kotlinVersion apply false
+    id("com.google.dagger.hilt") version hiltVersion apply false
+    id("com.google.protobuf") version protobufVersion apply false
 }
 
 allprojects {

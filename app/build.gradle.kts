@@ -8,6 +8,17 @@ plugins {
     id("kotlin-parcelize")
 }
 
+val lifecycleVersion = providers.gradleProperty("lifecycleVersion").get()
+val activityVersion = providers.gradleProperty("activityVersion").get()
+val navigationVersion = providers.gradleProperty("navigationVersion").get()
+val composeVersion = providers.gradleProperty("composeVersion").get()
+val roomVersion = providers.gradleProperty("roomVersion").get()
+val hiltVersion = providers.gradleProperty("hiltVersion").get()
+val datastoreVersion = providers.gradleProperty("datastoreVersion").get()
+val workManagerVersion = providers.gradleProperty("workManagerVersion").get()
+val coroutinesVersion = providers.gradleProperty("coroutinesVersion").get()
+val coilVersion = providers.gradleProperty("coilVersion").get()
+
 android {
     namespace = "com.example.automation"
     compileSdk = 34
