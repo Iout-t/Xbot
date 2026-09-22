@@ -50,8 +50,10 @@ class RuleRepositoryImpl(
         rules.deleteById(id)
     }
 
-    override suspend fun setRuleEnabled(id: String, enabled: Boolean) = withContext(Dispatchers.IO) {
-        rules.getRule(id)?.let { rules.update(it.copy(enabled = enabled, updatedAt = Instant.now())) }
+    override suspend fun setRuleEnabled(id: String, enabled: Boolean) {
+        withContext(Dispatchers.IO) {
+            rules.getRule(id)?.let { rules.update(it.copy(enabled = enabled, updatedAt = Instant.now())) }
+        }
     }
 
     override suspend fun recordExecution(rule: AutomationRule, result: ExecutionResult, context: ExecutionContext) =

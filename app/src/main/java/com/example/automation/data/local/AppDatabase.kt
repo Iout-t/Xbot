@@ -3,6 +3,7 @@ package com.example.automation.data.local
 import androidx.room.*
 import com.example.automation.core.model.*
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 import java.time.Instant
 
 @Database(entities = [RuleEntity::class, ExecutionLogEntity::class], version = 1, exportSchema = false)
@@ -126,7 +127,7 @@ class Converters {
     fun toExecutionResult(value: String): ExecutionResult = json.decodeFromString(value)
 
     @TypeConverter
-    fun fromVariables(variables: Map<String, Any>): String = json.encodeToString(variables)
+    fun fromVariables(variables: Map<String, Any>): String = json.encodeToString(variables.mapValues { it.value.toString() })
     @TypeConverter
-    fun toVariables(value: String): Map<String, Any> = json.decodeFromString(value)
+    fun toVariables(value: String): Map<String, Any> = emptyMap()
 }

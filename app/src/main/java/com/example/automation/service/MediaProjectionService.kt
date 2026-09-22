@@ -12,7 +12,6 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Surface
 import androidx.media3.transformer.ExportResult
-import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -194,12 +193,12 @@ class MediaProjectionService : Service() {
     }
 
     private fun createNotification(): android.app.Notification {
-        return android.app.NotificationCompat.Builder(this, CHANNEL_ID)
+        return android.app.Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("Screen Capture Active")
             .setContentText("AutomationApp is capturing screen")
             .setSmallIcon(android.R.drawable.ic_media_play)
-            .setPriority(android.app.NotificationCompat.PRIORITY_LOW)
-            .setCategory(android.app.NotificationCompat.CATEGORY_SERVICE)
+            .setPriority(android.app.Notification.PRIORITY_LOW)
+            .setCategory(android.app.Notification.CATEGORY_SERVICE)
             .setOngoing(true)
             .build()
     }
