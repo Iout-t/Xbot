@@ -154,7 +154,9 @@ sealed interface Trigger {
                 LogicOperator.XOR -> triggers.count { it.matches(event) } == 1
             }
         }
-    }@Serializable
+    }
+
+    @Serializable
     @Parcelize
     object ManualTrigger : Trigger {
         override fun matches(event: AccessibilityEvent): Boolean = false
@@ -485,7 +487,9 @@ sealed interface UiSelector : Parcelable {
 
     @Serializable @Parcelize data class ByClassName(
         val className: String
-    ) : UiSelectorSerializable @Parcelize data class ByPosition(
+    ) : UiSelector
+
+    @Serializable @Parcelize data class ByPosition(
         val x: Int,
         val y: Int,
         val width: Int,
@@ -517,13 +521,12 @@ sealed interface UiSelector : Parcelable {
         val checked: Boolean
     ) : UiSelector
 
-    @Serializable @Parcelize data class ByFocused : UiSelector
-    @Serializable @Parcelize data class BySelected : UiSelector
-    @Serializable @Parcelize data class ByClickable : UiSelector
-    @Serializable @Parcelize data class ByScrollable : UiSelector
-    @Serializable @Parcelize data class ByEditable : UiSelector
-    @Serializable @Parcelize data class ByCheckable : UiSelector
-    @Serializable @Parcelize data class ByLongClickable : UiSelector
+    @Serializable @Parcelize object ByFocused : UiSelector
+    @Serializable @Parcelize object BySelected : UiSelector
+    @Serializable @Parcelize object ByClickable : UiSelector
+    @Serializable @Parcelize object ByScrollable : UiSelector
+    @Serializable @Parcelize object ByEditable : UiSelector
+    @Serializable @Parcelize object ByLongClickable : UiSelector
 
     companion object {
         fun text(text: String, matchType: TextMatchType = TextMatchType.EXACT): UiSelector = ByText(text, matchType)
@@ -648,7 +651,9 @@ data class SerializableNode(
     val childCount: Int,
     val children: List<SerializableNode> = emptyList(),
     val parent: SerializableNode? = null
-) : Parcelable/**
+) : Parcelable
+
+/**
  * Trigger context - how the rule was triggered.
  */
 @Serializable
