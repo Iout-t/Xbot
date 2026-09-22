@@ -40,11 +40,8 @@ class SetTextExecutor : ActionExecutor {
         delay(50)
 
         if (clearFirst) {
-            // Clear existing text: select all + delete
-            accessibility.performAction(target, AccessibilityNodeInfo.ACTION_SELECT_ALL)
+            // ACTION_SET_TEXT below replaces the current value atomically.
             delay(50)
-            accessibility.performAction(target, AccessibilityNodeInfo.ACTION_CUT)
-            delay(100)
         }
 
         // Input text

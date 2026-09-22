@@ -29,8 +29,9 @@ class TakeScreenshotExecutor(
         variables: MutableMap<String, Any>,
         accessibility: AccessibilityController
     ): ExecutionResult = withContext(Dispatchers.IO) {
-        val projection = mediaProjectionManager.getActiveProjection()
-            ?: return@withContext ExecutionResult.Failure("No active MediaProjection. Start screen capture first.")
+        if (mediaProjectionManager.getActiveProjection() == null) {
+            return@withContext ExecutionResult.Failure("No active MediaProjection. Start screen capture first.")
+        }
 
         val format = when (action.getString("format")?.uppercase()) {
             "JPEG", "JPG" -> Bitmap.CompressFormat.JPEG
@@ -42,7 +43,7 @@ class TakeScreenshotExecutor(
         val includeStatusBar = action.getBoolean("includeStatusBar") ?: false
         val includeNavBar = action.getBoolean("includeNavBar") ?: false
 
-        val bitmap = projection.captureScreen(includeStatusBar, includeNavBar)
+        val bitmap = mediaProjectionManager.captureScreen(includeStatusBar, includeNavBar)
             ?: return@withContext ExecutionResult.Failure("Failed to capture screen")
 
         val file = File(saveDirectory, fileName)

@@ -4,6 +4,7 @@ import android.os.Parcelable
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.*
+import kotlinx.parcelize.Parcelize
 import java.time.Instant
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -30,10 +31,10 @@ data class AutomationRule(
     val actionPlan: ActionPlan,
     val preconditions: List<Precondition> = emptyList(),
     val errorHandling: ErrorHandling = ErrorHandling.StopOnError,
-    val createdAt: Instant = Instant.now(),
-    val updatedAt: Instant = Instant.now(),
+    val createdAt: @Contextual Instant = Instant.now(),
+    val updatedAt: @Contextual Instant = Instant.now(),
     val executionCount: Int = 0,
-    val lastExecutionAt: Instant? = null,
+    val lastExecutionAt: @Contextual Instant? = null,
     val successCount: Int = 0,
     val failureCount: Int = 0,
     val tags: List<String> = emptyList(),
@@ -78,6 +79,7 @@ data class AutomationRule(
  */
 @Serializable
 sealed interface Trigger {
+    fun matches(event: AccessibilityEvent): Boolean
     @Serializable
     @Parcelize
     data class AccessibilityEventTrigger(
@@ -170,7 +172,7 @@ data class ActionPlan(
     val id: String = UUID.randomUUID().toString(),
     val name: String = "Action Plan",
     val actions: List<Action> = emptyList(),
-    val variables: Map<String, Any> = emptyMap(),  // Initial variables
+    val variables: Map<String, @Contextual Any> = emptyMap(),  // Initial variables
     val timeoutMs: Long = 60_000,
     val continueOnFailure: Boolean = false
 ) : Parcelable {
@@ -187,7 +189,7 @@ data class ActionPlan(
 data class Action(
     val id: String = UUID.randomUUID().toString(),
     val type: ActionType,
-    val parameters: Map<String, Any> = emptyMap(),
+    val parameters: Map<String, @Contextual Any> = emptyMap(),
     val delayAfter: Long = 0,
     val description: String = "",
     val enabled: Boolean = true,
@@ -195,10 +197,10 @@ data class Action(
 ) : Parcelable {
 
     fun getString(key: String): String? = parameters[key] as? String
-    fun getInt(key: String): Int? = (parameters[key] as? Number)?.intValue()
-    fun getLong(key: String): Long? = (parameters[key] as? Number)?.longValue()
+    fun getInt(key: String): Int? = (parameters[key] as? Number)?.toInt()
+    fun getLong(key: String): Long? = (parameters[key] as? Number)?.toLong()
     fun getBoolean(key: String): Boolean? = parameters[key] as? Boolean
-    fun getDouble(key: String): Double? = (parameters[key] as? Number)?.doubleValue()
+    fun getDouble(key: String): Double? = (parameters[key] as? Number)?.toDouble()
     fun <T : Enum<T>> getEnum(key: String, enumClass: KClass<T>): T? {
         val str = getString(key) ?: return null
         return enumClass.java.enumConstants.firstOrNull { it.name == str }
@@ -213,42 +215,42 @@ data class Action(
 @Serializable
 sealed interface ActionType {
     @Serializable @Parcelize data class Click(val clickType: ClickType = ClickType.SIMPLE) : ActionType
-    @Serializable @Parcelize data class LongClick : ActionType
-    @Serializable @Parcelize data class DoubleClick : ActionType
+    @Serializable @Parcelize data class LongClick(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class DoubleClick(val marker: Boolean = false) : ActionType
     @Serializable @Parcelize data class Swipe(val direction: SwipeDirection) : ActionType
     @Serializable @Parcelize data class Scroll(val direction: ScrollDirection) : ActionType
-    @Serializable @Parcelize data class SetText : ActionType
-    @Serializable @Parcelize data class ClearText : ActionType
-    @Serializable @Parcelize data class PasteText : ActionType
-    @Serializable @Parcelize data class TypeText : ActionType
+    @Serializable @Parcelize data class SetText(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class ClearText(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class PasteText(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class TypeText(val marker: Boolean = false) : ActionType
     @Serializable @Parcelize data class PressKey(val keyCode: Int) : ActionType
-    @Serializable @Parcelize data class PressBack : ActionType
-    @Serializable @Parcelize data class PressHome : ActionType
-    @Serializable @Parcelize data class OpenNotifications : ActionType
-    @Serializable @Parcelize data class OpenQuickSettings : ActionType
-    @Serializable @Parcelize data class OpenRecents : ActionType
-    @Serializable @Parcelize data class WaitForElement : ActionType
-    @Serializable @Parcelize data class WaitForCondition : ActionType
+    @Serializable @Parcelize data class PressBack(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class PressHome(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class OpenNotifications(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class OpenQuickSettings(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class OpenRecents(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class WaitForElement(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class WaitForCondition(val marker: Boolean = false) : ActionType
     @Serializable @Parcelize data class Wait(val durationMs: Long) : ActionType
     @Serializable @Parcelize data class If(val condition: Precondition, val thenActions: List<Action>, val elseActions: List<Action> = emptyList()) : ActionType
     @Serializable @Parcelize data class Loop(val count: Int, val actions: List<Action>, val breakCondition: Precondition? = null) : ActionType
     @Serializable @Parcelize data class ForEach(val collectionVar: String, val actions: List<Action>) : ActionType
-    @Serializable @Parcelize data class SetVariable(val name: String, val value: Any) : ActionType
+    @Serializable @Parcelize data class SetVariable(val name: String, val value: @Contextual Any) : ActionType
     @Serializable @Parcelize data class GetVariable(val name: String) : ActionType
     @Serializable @Parcelize data class Script(val code: String, val language: ScriptLanguage = ScriptLanguage.KOTLIN) : ActionType
-    @Serializable @Parcelize data class TakeScreenshot : ActionType
-    @Serializable @Parcelize data class StartScreenRecord : ActionType
-    @Serializable @Parcelize data class StopScreenRecord : ActionType
+    @Serializable @Parcelize data class TakeScreenshot(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class StartScreenRecord(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class StopScreenRecord(val marker: Boolean = false) : ActionType
     @Serializable @Parcelize data class EditPhoto(val operations: List<PhotoEditOperation>) : ActionType
-    @Serializable @Parcelize data class SaveImage : ActionType
-    @Serializable @Parcelize data class LoadImage : ActionType
-    @Serializable @Parcelize data class SendSms : ActionType
-    @Serializable @Parcelize data class MakeCall : ActionType
-    @Serializable @Parcelize data class SendIntent : ActionType
+    @Serializable @Parcelize data class SaveImage(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class LoadImage(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class SendSms(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class MakeCall(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class SendIntent(val marker: Boolean = false) : ActionType
     @Serializable @Parcelize data class LaunchApp(val packageName: String) : ActionType
     @Serializable @Parcelize data class KillApp(val packageName: String) : ActionType
-    @Serializable @Parcelize data class SetClipboard : ActionType
-    @Serializable @Parcelize data class GetClipboard : ActionType
+    @Serializable @Parcelize data class SetClipboard(val marker: Boolean = false) : ActionType
+    @Serializable @Parcelize data class GetClipboard(val marker: Boolean = false) : ActionType
     @Serializable @Parcelize data class Vibrate(val pattern: LongArray) : ActionType
     @Serializable @Parcelize data class Toast(val message: String) : ActionType
     @Serializable @Parcelize data class Notification(val title: String, val text: String) : ActionType
@@ -573,6 +575,11 @@ data class AccessibilityEvent(
 ) : Parcelable {
 
     companion object {
+        const val TYPE_VIEW_CLICKED = android.view.accessibility.AccessibilityEvent.TYPE_VIEW_CLICKED
+        const val TYPE_VIEW_TEXT_CHANGED = android.view.accessibility.AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED
+        const val TYPE_WINDOW_STATE_CHANGED = android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+        const val TYPE_WINDOW_CONTENT_CHANGED = android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
+
         fun fromAndroidEvent(event: android.view.accessibility.AccessibilityEvent): AccessibilityEvent {
             return AccessibilityEvent(
                 eventType = event.eventType,
@@ -640,7 +647,7 @@ sealed interface TriggerContext {
     @Serializable @Parcelize data class Event(val event: AccessibilityEvent) : TriggerContext
     @Serializable @Parcelize object Manual : TriggerContext
     @Serializable @Parcelize data class Scheduled(val triggerId: String) : TriggerContext
-    @Serializable @Parcelize data class External(val source: String, val payload: Map<String, Any>) : TriggerContext
+    @Serializable @Parcelize data class External(val source: String, val payload: Map<String, @Contextual Any>) : TriggerContext
 }
 
 /**
@@ -648,7 +655,7 @@ sealed interface TriggerContext {
  */
 @Serializable
 sealed interface ExecutionResult {
-    @Serializable @Parcelize data class Success(val output: Any? = null) : ExecutionResult
+    @Serializable @Parcelize data class Success(val output: @Contextual Any? = null) : ExecutionResult
     @Serializable @Parcelize data class Failure(val reason: String) : ExecutionResult
     @Serializable @Parcelize data class PreconditionFailed(val reason: String) : ExecutionResult
     @Serializable @Parcelize object Cancelled : ExecutionResult
@@ -676,9 +683,9 @@ data class ExecutionContext(
     val ruleId: String,
     val ruleName: String,
     val triggerContext: TriggerContext,
-    val variables: Map<String, Any> = emptyMap(),
-    val startTime: Instant = Instant.now(),
-    val endTime: Instant? = null,
+    val variables: Map<String, @Contextual Any> = emptyMap(),
+    val startTime: @Contextual Instant = Instant.now(),
+    val endTime: @Contextual Instant? = null,
     val status: ExecutionStatus = ExecutionStatus.RUNNING,
     val result: ExecutionResult? = null,
     val completedActions: Int = 0,
@@ -700,11 +707,11 @@ enum class ExecutionStatus { PENDING, RUNNING, PAUSED, COMPLETED, FAILED, CANCEL
 @Serializable
 @Parcelize
 data class ExecutionLogEntry(
-    val timestamp: Instant = Instant.now(),
+    val timestamp: @Contextual Instant = Instant.now(),
     val level: LogLevel = LogLevel.INFO,
     val message: String,
     val actionId: String? = null,
-    val data: Map<String, Any> = emptyMap()
+    val data: Map<String, @Contextual Any> = emptyMap()
 ) : Parcelable
 
 enum class LogLevel { DEBUG, INFO, WARN, ERROR }
@@ -713,11 +720,11 @@ enum class LogLevel { DEBUG, INFO, WARN, ERROR }
  * Engine state.
  */
 sealed interface EngineState {
-    @Serializable @Parcelize data class Idle : EngineState
-    @Serializable @Parcelize data class Starting : EngineState
-    @Serializable @Parcelize data class Running : EngineState
-    @Serializable @Parcelize data class Stopping : EngineState
-    @Serializable @Parcelize data class Stopped : EngineState
+    @Serializable @Parcelize object Idle : EngineState
+    @Serializable @Parcelize object Starting : EngineState
+    @Serializable @Parcelize object Running : EngineState
+    @Serializable @Parcelize object Stopping : EngineState
+    @Serializable @Parcelize object Stopped : EngineState
     @Serializable @Parcelize data class Error(val message: String) : EngineState
 }
 
@@ -772,7 +779,7 @@ enum class VariableType { STRING, INT, LONG, DOUBLE, BOOLEAN, LIST, MAP, NULL }
 @Parcelize
 data class RuleExport(
     val version: Int = 1,
-    val exportedAt: Instant = Instant.now(),
+    val exportedAt: @Contextual Instant = Instant.now(),
     val appVersion: String = "1.0",
     val rules: List<AutomationRule> = emptyList(),
     val globalVariables: Map<String, VariableValue> = emptyMap()

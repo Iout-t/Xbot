@@ -10,7 +10,8 @@ import kotlinx.coroutines.Dispatchers
  */
 interface ActionExecutor {
     val supportedType: ActionType
-    val executionDispatcher: CoroutineDispatcher = Dispatchers.IO
+    val executionDispatcher: CoroutineDispatcher
+        get() = Dispatchers.IO
 
     /**
      * Execute the action with given parameters and context.
@@ -40,6 +41,6 @@ interface ActionExecutor {
 }
 
 sealed interface ValidationResult {
-    data class Valid : ValidationResult
+    object Valid : ValidationResult
     data class Invalid(val errors: List<String>) : ValidationResult
 }

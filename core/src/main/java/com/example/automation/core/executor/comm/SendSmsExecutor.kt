@@ -18,18 +18,18 @@ class SendSmsExecutor(private val context: Context) : ActionExecutor {
     ): ExecutionResult = withContext(Dispatchers.IO) {
         val phoneNumber = action.getString("phoneNumber")
             ?: variables["contact_phone"] as String?
-            ?: return ExecutionResult.Failure("Missing phone number")
+            ?: return@withContext ExecutionResult.Failure("Missing phone number")
 
         val message = action.getString("message")
-            ?: return ExecutionResult.Failure("Missing message text")
+            ?: return@withContext ExecutionResult.Failure("Missing message text")
 
         val simulateOnly = action.getBoolean("simulateOnly") ?: false
 
         if (simulateOnly) {
-            return ExecutionResult.Success(mapOf("simulated" to true, "to" to phoneNumber, "message" to message))
+            return@withContext ExecutionResult.Success(mapOf("simulated" to true, "to" to phoneNumber, "message" to message))
         }
 
-        return try {
+        try {
             val smsManager = SmsManager.getDefault()
             
             // Handle long messages (multipart)
