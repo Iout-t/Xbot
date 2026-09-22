@@ -1,6 +1,7 @@
 package com.example.automation.ui.recorder
 
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
@@ -22,6 +23,7 @@ import com.example.automation.service.AccessibilityServiceImpl
 import kotlinx.coroutines.launch
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun RecorderScreen(
     viewModel: RecorderViewModel = hiltViewModel(),
     onBack: () -> Unit
