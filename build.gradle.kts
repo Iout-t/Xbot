@@ -1,25 +1,16 @@
-val agpVersion = providers.gradleProperty("agpVersion").get()
-val kotlinVersion = providers.gradleProperty("kotlinVersion").get()
-val hiltVersion = providers.gradleProperty("hiltVersion").get()
-val protobufVersion = providers.gradleProperty("protobufVersion").get()
-
 buildscript {
     dependencies {
-        classpath("com.android.tools.build:gradle:$agpVersion")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:$hiltVersion")
-        classpath("com.google.protobuf:protobuf-gradle-plugin:$protobufVersion")
+        classpath("com.android.tools.build:gradle:8.5.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.48")
     }
 }
 
 plugins {
-    id("com.android.application") version agpVersion apply false
-    id("org.jetbrains.kotlin.android") version kotlinVersion apply false
-    id("org.jetbrains.kotlin.kapt") version kotlinVersion apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion apply false
-    id("org.jetbrains.kotlin.plugin.compose") version kotlinVersion apply false
-    id("com.google.dagger.hilt") version hiltVersion apply false
-    id("com.google.protobuf") version protobufVersion apply false
+    id("com.android.application") version "8.5.0" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+    id("org.jetbrains.kotlin.kapt") version "1.9.24" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.24" apply false
 }
 
 allprojects {

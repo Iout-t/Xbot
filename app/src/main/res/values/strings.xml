@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AutomationApp</string>
+    <string name="accessibility_service_name">AutomationApp Accessibility Service</string>
+    <string name="accessibility_service_desc">Provides accessibility-based automation for the AutomationApp.</string>
+</resources>

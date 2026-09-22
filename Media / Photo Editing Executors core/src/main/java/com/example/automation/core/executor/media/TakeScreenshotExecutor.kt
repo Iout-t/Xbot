@@ -32,11 +32,15 @@ class TakeScreenshotExecutor(
         val projection = mediaProjectionManager.getActiveProjection()
             ?: return@withContext ExecutionResult.Failure("No active MediaProjection. Start screen capture first.")
 
-        val format = action.getEnum<Bitmap.CompressFormat>("format") ?: Bitmap.CompressFormat.PNG
+        val format = when (action.getString("format")?.uppercase()) {
+            "JPEG", "JPG" -> Bitmap.CompressFormat.JPEG
+            "WEBP" -> Bitmap.CompressFormat.WEBP
+            else -> Bitmap.CompressFormat.PNG
+        }
         val quality = action.getInt("quality") ?: 90
         val fileName = action.getString("fileName") ?: generateFileName(format)
-        val includeStatusBar = action.getBoolean("includeStatusBar") ?? false
-        val includeNavBar = action.getBoolean("includeNavBar") ?? false
+        val includeStatusBar = action.getBoolean("includeStatusBar") ?: false
+        val includeNavBar = action.getBoolean("includeNavBar") ?: false
 
         val bitmap = projection.captureScreen(includeStatusBar, includeNavBar)
             ?: return@withContext ExecutionResult.Failure("Failed to capture screen")

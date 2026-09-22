@@ -28,8 +28,8 @@ class SetTextExecutor : ActionExecutor {
             return ExecutionResult.Failure("Element is not editable: ${target.className}")
         }
 
-        val clearFirst = action.getBoolean("clearFirst") ?? true
-        val pressEnter = action.getBoolean("pressEnter") ?? false
+        val clearFirst = action.getBoolean("clearFirst") ?: true
+        val pressEnter = action.getBoolean("pressEnter") ?: false
         val delayBetweenChars = action.getLong("delayBetweenChars") ?: 0L
 
         // Focus the element first

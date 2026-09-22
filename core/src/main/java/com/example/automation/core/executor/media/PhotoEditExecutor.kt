@@ -39,15 +39,16 @@ class PhotoEditExecutor(
             return ExecutionResult.Failure("Input file not found: $inputSource")
         }
 
-        val operations = action.getList("operations") 
-            ?: return ExecutionResult.Failure("No edit operations specified")
+        val operations = action.parameters["operations"] as? List<*>
+            ?: return@withContext ExecutionResult.Failure("No edit operations specified")
 
         var bitmap = loadBitmap(inputFile)
             ?: return ExecutionResult.Failure("Failed to load input image")
 
         try {
             for (opMap in operations) {
-                val op = opMap as Map<String, Any>
+                val op = opMap as? Map<String, Any>
+                    ?: continue
                 val type = op["type"] as String? ?: continue
                 
                 bitmap = when (type) {
@@ -167,8 +168,8 @@ class PhotoEditExecutor(
         // Brightness
         if (brightness != 0f) {
             val bm = ColorMatrix()
-            val val = brightness * 255
-            bm.setTranslate(val, val, val, 0f)
+            val offset = brightness * 255
+            bm.setTranslate(offset, offset, offset, 0f)
             cm.postConcat(bm)
         }
         

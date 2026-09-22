@@ -3,8 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.dagger.hilt")
+    id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
 }
 
@@ -18,6 +17,7 @@ val datastoreVersion = providers.gradleProperty("datastoreVersion").get()
 val workManagerVersion = providers.gradleProperty("workManagerVersion").get()
 val coroutinesVersion = providers.gradleProperty("coroutinesVersion").get()
 val coilVersion = providers.gradleProperty("coilVersion").get()
+val material3Version = providers.gradleProperty("material3Version").get()
 
 android {
     namespace = "com.example.automation"

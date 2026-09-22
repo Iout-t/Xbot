@@ -23,7 +23,7 @@ class SendSmsExecutor(private val context: Context) : ActionExecutor {
         val message = action.getString("message")
             ?: return ExecutionResult.Failure("Missing message text")
 
-        val simulateOnly = action.getBoolean("simulateOnly") ?? false
+        val simulateOnly = action.getBoolean("simulateOnly") ?: false
 
         if (simulateOnly) {
             return ExecutionResult.Success(mapOf("simulated" to true, "to" to phoneNumber, "message" to message))

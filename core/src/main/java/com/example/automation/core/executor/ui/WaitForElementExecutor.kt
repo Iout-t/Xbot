@@ -21,8 +21,10 @@ class WaitForElementExecutor : ActionExecutor {
 
         val timeout = Duration.ofMillis(action.getLong("timeoutMs") ?: 10_000L)
         val pollInterval = Duration.ofMillis(action.getLong("pollIntervalMs") ?: 500L)
-        val requiredState = action.getEnum<ElementState>("state") ?? ElementState.VISIBLE
-        val minCount = action.getInt("minCount") ?? 1
+        val requiredState = action.getString("state")
+            ?.let { value -> runCatching { ElementState.valueOf(value.uppercase()) }.getOrNull() }
+            ?: ElementState.VISIBLE
+        val minCount = action.getInt("minCount") ?: 1
 
         val startTime = System.currentTimeMillis()
         val timeoutMs = timeout.toMillis()
