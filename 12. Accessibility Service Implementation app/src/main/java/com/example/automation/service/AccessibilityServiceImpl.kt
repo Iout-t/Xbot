@@ -174,3 +174,224 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
             moveTo(startX.toFloat(), startY.toFloat())
             lineTo(endX.toFloat(), endY.toFloat())
         }
+    }
+    val gesture = GestureDescription.Builder()
+            .addStroke(GestureDescription.StrokeDescription(path, 0, duration.toLong()))
+            .build()
+
+        return dispatchGesture(gesture, object : GestureResultCallback() {
+            override fun onCompleted(gestureDescription: GestureDescription) {
+                Log.d(TAG, "Swipe completed")
+            }
+            override fun onCancelled(gestureDescription: GestureDescription) {
+                Log.w(TAG, "Swipe cancelled")
+            }
+        }, handler) != 0
+    }
+
+    override fun performSetText(node: AccessibilityNodeWrapper, text: String): Boolean {
+        val nw = node as? NodeWrapper
+        val info = nw?.info ?: return false
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Use ACTION_SET_TEXT for API 26+
+            val args = Bundle().apply { putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text) }
+            return info.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+        } else {
+            // Fallback: clipboard paste
+            return performPasteText(info, text)
+        }
+    }
+
+    private fun performPasteText(info: AccessibilityNodeInfo, text: String): Boolean {
+        // Focus -> Select All -> Copy -> Paste
+        info.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+        Thread.sleep(50)
+        info.performAction(AccessibilityNodeInfo.ACTION_SELECT_ALL)
+        Thread.sleep(50)
+        // Set clipboard
+        getSystemService(android.content.ClipboardManager::class.java)?.setPrimaryClip(
+            android.content.ClipData.newPlainText("automation", text)
+        )
+        Thread.sleep(50)
+        return info.performAction(AccessibilityNodeInfo.ACTION_PASTE)
+    }
+
+    override fun performTypeTextCharByChar(node: AccessibilityNodeWrapper, text: String, delayMs: Long): Boolean {
+        val nw = node as? NodeWrapper
+        val info = nw?.info ?: return false
+        
+        info.performAction(AccessibilityNodeInfo.ACTION_FOCUS)
+        Thread.sleep(50)
+        
+        for (char in text) {
+            val args = Bundle().apply { putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, char.toString()) }
+            info.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+            Thread.sleep(delayMs)
+        }
+        return true
+    }
+
+    override fun performAction(node: AccessibilityNodeWrapper, action: Int): Boolean {
+        return (node as? NodeWrapper)?.info?.performAction(action) == true
+    }
+
+    override fun performPressKey(node: AccessibilityNodeWrapper, keyCode: Int): Boolean {
+        // Global key events require special handling
+        // This is a simplified version - real implementation uses Instrumentation
+        return false
+    }
+
+    override fun performScrollForward(node: AccessibilityNodeWrapper): Boolean {
+        return (node as? NodeWrapper)?.info?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) == true
+    }
+
+    override fun performScrollBackward(node: AccessibilityNodeWrapper): Boolean {
+        return (node as? NodeWrapper)?.info?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD) == true
+    }
+
+    override fun performGesture(gesture: GestureDescription): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false
+        
+        val path = Path()
+        gesture.strokes.forEach { stroke ->
+            // Convert our Path to Android Path
+            // This is simplified - real implementation needs proper path conversion
+        }
+        return false
+    }
+
+    // =========================================================================
+    // GLOBAL ACTIONS
+    // =========================================================================
+
+    override fun performGlobalAction(action: Int): Boolean {
+        return performGlobalAction(action)
+    }
+
+    override fun goBack(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK)
+    override fun goHome(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_HOME)
+    override fun openNotifications(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS)
+    override fun openQuickSettings(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)
+    override fun openRecents(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_RECENTS)
+    override fun toggleSplitScreen(): Boolean = performGlobalAction(AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
+
+    // =========================================================================
+    // HELPER METHODS
+    // =========================================================================
+
+    private fun getRootNodeInfo(): AccessibilityNodeInfo? {
+        return rootInActiveWindow ?: rootNodeRef.get()
+    }
+
+    private fun updateRootNode(node: AccessibilityNodeInfo?) {
+        node?.let { rootNodeRef.set(it) }
+    }
+
+    private fun convertEvent(event: AccessibilityEvent): AccessibilityEvent {
+        return AccessibilityEvent(
+            eventType = event.eventType,
+            packageName = event.packageName?.toString() ?: "",
+            className = event.className?.toString() ?: "",
+            text = event.text.joinToString(" "),
+            contentDescription = event.contentDescription?.toString() ?: "",
+            viewId = event.source?.viewIdResourceName ?: "",
+            timestamp = event.eventTime,
+            source = event.source?.let { NodeWrapper(it).toSerializableNode() }
+        )
+    }
+
+    // =========================================================================
+    // NODE WRAPPER
+    // =========================================================================
+
+    private inner class NodeWrapper(override val info: AccessibilityNodeInfo) : AccessibilityNodeWrapper {
+        override val viewIdResourceName: String? = info.viewIdResourceName
+        override val text: CharSequence? = info.text
+        override val contentDescription: CharSequence? = info.contentDescription
+        override val className: String = info.className.toString()
+        override val packageName: String = info.packageName?.toString() ?: ""
+        
+        override val boundsInScreen: Rect = info.run {
+            val rect = android.graphics.Rect()
+            getBoundsInScreen(rect)
+            Rect(rect.left, rect.top, rect.right, rect.bottom)
+        }
+        
+        override val boundsInParent: Rect = info.run {
+            val rect = android.graphics.Rect()
+            getBoundsInParent(rect)
+            Rect(rect.left, rect.top, rect.right, rect.bottom)
+        }
+
+        override val centerX: Int = boundsInScreen.centerX
+        override val centerY: Int = boundsInScreen.centerY
+        
+        override val isVisibleToUser: Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            info.isVisibleToUser
+        } else {
+            info.isVisibleToUser
+        }override val isEnabled: Boolean = info.isEnabled
+        override val isFocused: Boolean = info.isFocused
+        override val isFocusable: Boolean = info.isFocusable
+        override val isClickable: Boolean = info.isClickable
+        override val isLongClickable: Boolean = info.isLongClickable
+        override val isScrollable: Boolean = info.isScrollable
+        override val isEditable: Boolean = info.isEditable
+        override val isChecked: Boolean = info.isChecked
+        override val isCheckable: Boolean = info.isCheckable
+        override val isSelected: Boolean = info.isSelected
+        override val inputType: Int = info.inputType
+        override val maxTextLength: Int = info.maxTextLength
+        override val hintText: CharSequence? = info.hintText
+        override val errorText: CharSequence? = info.error
+        
+        override val actions: List<AccessibilityAction> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            info.actionList?.map { AccessibilityAction(it.id, it.label) } ?: emptyList()
+        } else {
+            emptyList()
+        }
+
+        override val childCount: Int = info.childCount
+        
+        override fun getChild(index: Int): AccessibilityNodeWrapper? {
+            return info.getChild(index)?.let { NodeWrapper(it) }
+        }
+        
+        override fun findChild(selector: UiSelector): AccessibilityNodeWrapper? {
+            return UiSelectorResolver.findNode(info, selector)?.let { NodeWrapper(it) }
+        }
+        
+        override fun findChildren(selector: UiSelector): List<AccessibilityNodeWrapper> {
+            return UiSelectorResolver.findNodes(info, selector).map { NodeWrapper(it) }
+        }
+        
+        override fun getParent(): AccessibilityNodeWrapper? {
+            return info.parent?.let { NodeWrapper(it) }
+        }
+        
+        override fun performAction(action: Int): Boolean {
+            return info.performAction(action)
+        }
+        
+        override fun toSerializableNode(): SerializableNode {
+            return SerializableNode(
+                viewId = viewIdResourceName,
+                text = text?.toString(),
+                contentDescription = contentDescription?.toString(),
+                className = className,
+                packageName = packageName,
+                bounds = boundsInScreen,
+                isVisible = isVisibleToUser,
+                isEnabled = isEnabled,
+                isClickable = isClickable,
+                isEditable = isEditable,
+                childCount = childCount
+            )
+        }
+
+        fun refresh(): AccessibilityNodeInfo? {
+            return info.refresh()?.let { it } ?: info
+        }
+    }
+}
