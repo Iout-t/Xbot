@@ -3,7 +3,9 @@ package com.example.automation.service
 import android.app.Service
 import android.content.Intent
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
+import android.content.pm.ServiceInfo
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -20,8 +22,8 @@ class AutomationForegroundService : Service() {
         private const val TAG = "AutomationForegroundService"
         private const val NOTIFICATION_ID = 2001
         private const val CHANNEL_ID = "automation_channel"
-        private const val ACTION_START = "ACTION_START"
-        private const val ACTION_STOP = "ACTION_STOP"
+        const val ACTION_START = "ACTION_START"
+        const val ACTION_STOP = "ACTION_STOP"
         private const val ACTION_TOGGLE_RULE = "ACTION_TOGGLE_RULE"
     }
 
@@ -54,9 +56,9 @@ class AutomationForegroundService : Service() {
             ACTION_START -> startAutomation()
             ACTION_STOP -> stopAutomation()
             ACTION_TOGGLE_RULE -> {
-                val ruleId = intent.getStringExtra("ruleId") ?: return START_STICKY
-                val enabled = intent.getBooleanExtra("enabled", true)
-                engine?.ruleRepository?.setRuleEnabled(ruleId, enabled)
+                val ruleId = intent?.getStringExtra("ruleId") ?: return START_STICKY
+                val enabled = intent?.getBooleanExtra("enabled", true) ?: true
+                scope.launch { engine?.ruleRepository?.setRuleEnabled(ruleId, enabled) }
             }
         }
         

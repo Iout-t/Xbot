@@ -286,8 +286,8 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
         node?.let { rootNodeRef.set(it) }
     }
 
-    private fun convertEvent(event: AccessibilityEvent): AccessibilityEvent {
-        return AccessibilityEvent(
+    private fun convertEvent(event: android.view.accessibility.AccessibilityEvent): com.example.automation.core.model.AccessibilityEvent {
+        return com.example.automation.core.model.AccessibilityEvent(
             eventType = event.eventType,
             packageName = event.packageName?.toString() ?: "",
             className = event.className?.toString() ?: "",
@@ -303,7 +303,7 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
     // NODE WRAPPER
     // =========================================================================
 
-    private inner class NodeWrapper(override val info: AccessibilityNodeInfo) : AccessibilityNodeWrapper {
+    private inner class NodeWrapper(val info: AccessibilityNodeInfo) : AccessibilityNodeWrapper {
         override val viewIdResourceName: String? = info.viewIdResourceName
         override val text: CharSequence? = info.text
         override val contentDescription: CharSequence? = info.contentDescription
@@ -358,11 +358,11 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
         }
         
         override fun findChild(selector: UiSelector): AccessibilityNodeWrapper? {
-            return UiSelectorResolver.findNode(info, selector)?.let { NodeWrapper(it) }
+            return UiSelectorResolver.findNode(this, selector)
         }
         
         override fun findChildren(selector: UiSelector): List<AccessibilityNodeWrapper> {
-            return UiSelectorResolver.findNodes(info, selector).map { NodeWrapper(it) }
+            return UiSelectorResolver.findNodes(this, selector)
         }
         
         override fun getParent(): AccessibilityNodeWrapper? {
@@ -389,8 +389,6 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
             )
         }
 
-        fun refresh(): AccessibilityNodeInfo? {
-            return info.refresh()?.let { it } ?: info
-        }
+        fun refresh(): AccessibilityNodeInfo? = info
     }
 }

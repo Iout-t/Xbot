@@ -5,14 +5,18 @@ import android.content.Intent
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Binder
+import android.os.Build
 import android.os.IBinder
+import android.content.pm.ServiceInfo
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Surface
 import androidx.media3.transformer.ExportResult
+import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * Manages MediaProjection for screen capture and recording.
@@ -95,7 +99,7 @@ class MediaProjectionService : Service() {
         val projection = mediaProjection ?: return@coroutineScope null
         
         val displayMetrics = DisplayMetrics()
-        windowManager.defaultDisplay.getRealMetrics(displayMetrics)
+        getSystemService(android.view.WindowManager::class.java).defaultDisplay.getRealMetrics(displayMetrics)
         
         val width = displayMetrics.widthPixels
         val height = displayMetrics.heightPixels
@@ -212,7 +216,7 @@ class MediaProjectionManagerWrapper : com.example.automation.core.executor.Media
     override fun requestPermission(): Intent? = service?.requestProjectionPermission()
     override fun setResult(resultCode: Int, data: Intent?) { service?.setProjectionResult(resultCode, data) }
     override suspend fun captureScreen(
-        includeStatusBar: Boolean = false,
-        includeNavBar: Boolean = false
+        includeStatusBar: Boolean,
+        includeNavBar: Boolean
     ): android.graphics.Bitmap? = service?.captureScreen(includeStatusBar, includeNavBar)
 }
