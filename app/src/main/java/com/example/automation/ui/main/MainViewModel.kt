@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.automation.core.executor.AutomationEngine
 import com.example.automation.core.model.*
 import com.example.automation.data.repository.RuleRepository
+import com.example.automation.data.local.ExecutionLogEntity
 import com.example.automation.service.MediaProjectionManagerWrapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*

@@ -72,11 +72,7 @@ fun RecorderScreen(
                         )
                     }
                     if (uiState.isRecording) {
-                        Box(
-                            modifier = Modifier.size(12.dp)
-                            .graphicsLayer { alpha = (System.currentTimeMillis() % 1000 < 500).toFloat() }
-                            .background(Color.Red, androidx.compose.ui.graphics.CircleShape)
-                        )
+                        Box(modifier = Modifier.size(12.dp).background(Color.Red, androidx.compose.ui.graphics.CircleShape))
                     }
                 }
             }
