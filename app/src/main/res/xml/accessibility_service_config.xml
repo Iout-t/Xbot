@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<accessibility-service
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeAllMask"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault|flagIncludeNotImportantViews|flagReportViewIds|flagRetrieveInteractiveWindows"
+    android:canRetrieveWindowContent="true"
+    android:canPerformGestures="true"
+    android:canRequestTouchExploration="true"
+    android:canRequestFilterKeyEvents="true"
+    android:description="@string/accessibility_service_desc"
+    android:notificationTimeout="100"
+    android:packageNames="@null"
+    android:settingsActivity="com.example.automation.ui.settings.SettingsActivity" />
+app/src/main/res/xml/backup_rules.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <include domain="database" path="automation.db" />
+    <include domain="sharedpref" path="automation_prefs.xml" />
+    <exclude domain="file" path="cache/" />
+</full-backup-content>
