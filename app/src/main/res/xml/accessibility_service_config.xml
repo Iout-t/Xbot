@@ -9,5 +9,4 @@
     android:canRequestFilterKeyEvents="true"
     android:description="@string/accessibility_service_desc"
     android:notificationTimeout="100"
-    android:packageNames="@null"
-    android:settingsActivity="com.example.automation.ui.settings.SettingsActivity" />
+    android:packageNames="@null" />
