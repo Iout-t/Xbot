@@ -10,6 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
+      ANDROID_HOME: ${{ runner.temp }}/android-sdk
 
     steps:
       - name: Checkout source
@@ -29,9 +32,6 @@ jobs:
 
       - name: Setup Android SDK
         shell: bash
-        env:
-          ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
-          ANDROID_HOME: ${{ runner.temp }}/android-sdk
         run: |
           set -euxo pipefail
 
@@ -52,19 +52,24 @@ jobs:
             fi
           fi
 
-          if [ ! -x "$SDKMANAGER_DIR/latest/bin/sdkmanager" ]; then
+          if [ ! -x "$SDKMANAGER_DIR/latest/bin/sdkmanager" ] && [ ! -x "$SDKMANAGER_DIR/bin/sdkmanager" ]; then
             echo "Android SDK command-line tools are still unavailable after installation."
             exit 1
           fi
 
-          yes | "$SDKMANAGER_DIR/latest/bin/sdkmanager" --licenses >/dev/null
-          "$SDKMANAGER_DIR/latest/bin/sdkmanager" --install \
+          SDKMANAGER_BIN="$SDKMANAGER_DIR/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER_BIN" ]; then
+            SDKMANAGER_BIN="$SDKMANAGER_DIR/bin/sdkmanager"
+          fi
+
+          yes | "$SDKMANAGER_BIN" --licenses >/dev/null
+          "$SDKMANAGER_BIN" --install \
             "platform-tools" \
             "platforms;android-34" \
             "build-tools;34.0.0"
 
       - name: Create local.properties
-        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+        run: echo "sdk.dir=${ANDROID_HOME}" > local.properties
 
       - name: Build debug APK
         run: gradle assembleDebug
