@@ -151,7 +151,9 @@ fun MainScreen(
             }
         }
     }
-}Composable
+}
+
+@Composable
 fun StatCard(title: String, value: String, icon: androidx.compose.material.icons.Icons.Outlined) {
     Card(
         modifier = Modifier.weight(1f).fillMaxWidth(),
