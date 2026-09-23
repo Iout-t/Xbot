@@ -35,11 +35,16 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
     // STATE
     // =========================================================================
 
-    private val _eventFlow = MutableSharedFlow<com.example.automation.core.model.AccessibilityEvent>(extraBufferCapacity = 100)
-    override val eventFlow: SharedFlow<com.example.automation.core.model.AccessibilityEvent> = _eventFlow.asSharedFlow()
+    // Keep construction side-effect free. MIUI can instantiate an accessibility
+    // service before the framework has finished attaching its base Context.
+    private val _eventFlow by lazy {
+        MutableSharedFlow<com.example.automation.core.model.AccessibilityEvent>(extraBufferCapacity = 100)
+    }
+    override val eventFlow: SharedFlow<com.example.automation.core.model.AccessibilityEvent>
+        get() = _eventFlow.asSharedFlow()
 
     private val rootNodeRef = AtomicReference<AccessibilityNodeInfo?>(null)
-    private val handler = Handler(Looper.getMainLooper())
+    private val handler by lazy(LazyThreadSafetyMode.NONE) { Handler(Looper.getMainLooper()) }
     private var isStreamActive = false
 
     // =========================================================================
@@ -86,7 +91,8 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
     // ACCESSIBILITY CONTROLLER IMPLEMENTATION
     // =========================================================================
 
-    override val context: android.content.Context = this
+    override val context: android.content.Context
+        get() = this
 
     override fun startEventStream() {
         isStreamActive = true
