@@ -1,7 +1,6 @@
 package com.example.automation.service
 
 import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.AccessibilityServiceInfo
 import android.accessibilityservice.GestureDescription
 import android.content.Intent
 import android.graphics.Path
@@ -82,19 +81,6 @@ class AccessibilityServiceImpl : AccessibilityService(), AccessibilityController
     override fun onServiceConnected() {
         super.onServiceConnected()
         Log.i(TAG, "Accessibility service connected")
-        // MIUI devices can reject optional flags while parsing the XML service
-        // declaration. Apply the same capabilities after the service is live.
-        runCatching {
-            val info = serviceInfo
-            info.flags = info.flags or
-                AccessibilityServiceInfo.FLAG_INCLUDE_NOT_IMPORTANT_VIEWS or
-                AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
-                AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS or
-                AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
-            serviceInfo = info
-        }.onFailure {
-            Log.w(TAG, "Optional accessibility flags unavailable", it)
-        }
     }
 
     // =========================================================================
